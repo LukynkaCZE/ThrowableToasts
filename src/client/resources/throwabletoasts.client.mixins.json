@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "cz.lukynka.throwabletoasts.mixins",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "GameRendererMixin",
+    "MouseHandlerMixin",
+    "ToastInstanceMixin",
+    "ToastManagerAccessor"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

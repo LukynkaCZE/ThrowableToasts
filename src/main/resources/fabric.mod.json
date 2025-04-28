@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "id": "throwabletoasts",
+  "version": "${version}",
+  "name": "ThrowableToasts",
+  "description": "Throw those pesky toasts away!",
+  "authors": [],
+  "contact": {},
+  "license": "MIT",
+  "accessWidener": "throwabletoasts.accesswidener",
+  "icon": "assets/throwabletoasts/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "cz.lukynka.throwabletoasts.client.ThrowableToastsClient"
+    ],
+    "main": [
+      "cz.lukynka.throwabletoasts.ThrowableToasts"
+    ]
+  },
+  "mixins": [
+    "throwabletoasts.mixins.json",
+    {
+      "config": "throwabletoasts.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric-language-kotlin": ">=${kotlin_loader_version}",
+    "fabric": "*",
+    "minecraft": "${minecraft_version}"
+  }
+}
