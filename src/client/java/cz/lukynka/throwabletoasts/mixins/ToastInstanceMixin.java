@@ -2,6 +2,7 @@ package cz.lukynka.throwabletoasts.mixins;
 
 import com.mojang.math.Axis;
 import cz.lukynka.throwabletoasts.client.ThrowableToastsClient;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.toasts.Toast;
@@ -51,6 +52,9 @@ public class ToastInstanceMixin<T extends Toast> {
     @Unique
     int animationTicks = 0;
 
+    @Unique
+    DeltaTracker deltaTracker = Minecraft.getInstance().getDeltaTracker();
+
     double randomXModifier = ThrowableToastsClient.randomDoubleInRange(11, 17);
     double randomYModifier = ThrowableToastsClient.randomDoubleInRange(3, 5);
     float randomRotModifier = (float) ThrowableToastsClient.randomDoubleInRange(4, 7);
@@ -63,14 +67,15 @@ public class ToastInstanceMixin<T extends Toast> {
     @Inject(at = @At("HEAD"), method = "render", cancellable = true)
     public void render(GuiGraphics guiGraphics, int i, CallbackInfo ci) {
 
-        accumulatedTimeMillisRender += Minecraft.getInstance().getDeltaTracker().getRealtimeDeltaTicks() * 100;
+        accumulatedTimeMillisRender += deltaTracker.getRealtimeDeltaTicks() * 100;
         if (accumulatedTimeMillisRender >= targetFrameDurationMillis) {
 
             var mousePosition = ThrowableToastsClient.getCURSOR_LOCATION();
-            var hoveredToast = ThrowableToastsClient.Companion.getHOVERED_TOAST();
+            var hoveredToast = ThrowableToastsClient.getHOVERED_TOAST();
             var isBeingAnimated = ThrowableToastsClient.getTHROWN_AWAY_TOASTS().contains(thisClass);
-            double renderPositionX;
-            double renderPositionY;
+
+            double renderPositionX = (float) i - (float) this.toast.width();
+            double renderPositionY = (float) (this.firstSlotIndex * 32);
 
             if (isBeingAnimated) {
                 renderPositionX = animationX;
@@ -79,9 +84,6 @@ public class ToastInstanceMixin<T extends Toast> {
                 if (hoveredToast != null && hoveredToast == thisClass) {
                     renderPositionX = mousePosition.x - this.toast.width() / 2.0;
                     renderPositionY = mousePosition.y - this.toast.height() / 2.0;
-                } else {
-                    renderPositionX = (float) i - (float) this.toast.width();
-                    renderPositionY = (float) (this.firstSlotIndex * 32);
                 }
             }
 
@@ -102,7 +104,9 @@ public class ToastInstanceMixin<T extends Toast> {
     @Inject(at = @At("HEAD"), method = "update", cancellable = true)
     public void update(CallbackInfo ci) {
 
-        accumulatedTimeMillisUpdate += Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaTicks() * 100;
+        accumulatedTimeMillisUpdate += deltaTracker.getGameTimeDeltaTicks() * 100;
+
+        // cap the updates at 30fps, so It's not too fast (why is the ui rendering not limited anyway)
         if (accumulatedTimeMillisUpdate >= targetFrameDurationMillis) {
 
             accumulatedTimeMillisUpdate -= targetFrameDurationMillis;
@@ -113,6 +117,7 @@ public class ToastInstanceMixin<T extends Toast> {
                 rotation += randomRotModifier;
                 animationTicks++;
 
+                // Dispose
                 if (animationTicks == 100) {
                     this.hasFinishedRendering = true;
                     this.visibility = Toast.Visibility.HIDE;
