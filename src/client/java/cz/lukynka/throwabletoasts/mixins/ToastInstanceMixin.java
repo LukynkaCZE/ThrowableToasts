@@ -36,6 +36,7 @@ public class ToastInstanceMixin<T extends Toast> {
     @Shadow
     Toast.Visibility visibility;
 
+    @Shadow private float visiblePortion;
     @Unique
     @SuppressWarnings("unchecked")
     ToastManager.ToastInstance<T> thisClass = ((ToastManager.ToastInstance<T>) (Object) this);
@@ -74,7 +75,7 @@ public class ToastInstanceMixin<T extends Toast> {
             var hoveredToast = ThrowableToastsClient.getHOVERED_TOAST();
             var isBeingAnimated = ThrowableToastsClient.getTHROWN_AWAY_TOASTS().contains(thisClass);
 
-            double renderPositionX = (float) i - (float) this.toast.width();
+            double renderPositionX = (float)i - (float)this.toast.width() * this.visiblePortion;
             double renderPositionY = (float) (this.firstSlotIndex * 32);
 
             if (isBeingAnimated) {
