@@ -1,6 +1,5 @@
 package cz.lukynka.throwabletoasts.mixins;
 
-import com.mojang.math.Axis;
 import cz.lukynka.throwabletoasts.client.ThrowableToastsClient;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
@@ -36,7 +35,8 @@ public class ToastInstanceMixin<T extends Toast> {
     @Shadow
     Toast.Visibility visibility;
 
-    @Shadow private float visiblePortion;
+    @Shadow
+    private float visiblePortion;
     @Unique
     @SuppressWarnings("unchecked")
     ToastManager.ToastInstance<T> thisClass = ((ToastManager.ToastInstance<T>) (Object) this);
@@ -58,7 +58,7 @@ public class ToastInstanceMixin<T extends Toast> {
 
     double randomXModifier = ThrowableToastsClient.randomDoubleInRange(11, 17);
     double randomYModifier = ThrowableToastsClient.randomDoubleInRange(3, 5);
-    float randomRotModifier = (float) ThrowableToastsClient.randomDoubleInRange(4, 7);
+    float randomRotModifier = (float) ThrowableToastsClient.randomDoubleInRange(0.1, 0.3);
 
     private final int targetFPS = 30;
     private final float targetFrameDurationMillis = 1000f / targetFPS;
@@ -75,7 +75,7 @@ public class ToastInstanceMixin<T extends Toast> {
             var hoveredToast = ThrowableToastsClient.getHOVERED_TOAST();
             var isBeingAnimated = ThrowableToastsClient.getTHROWN_AWAY_TOASTS().contains(thisClass);
 
-            double renderPositionX = (float)i - (float)this.toast.width() * this.visiblePortion;
+            double renderPositionX = (float) i - (float) this.toast.width() * this.visiblePortion;
             double renderPositionY = (float) (this.firstSlotIndex * 32);
 
             if (isBeingAnimated) {
@@ -88,15 +88,15 @@ public class ToastInstanceMixin<T extends Toast> {
                 }
             }
 
-            guiGraphics.pose().pushPose();
-            guiGraphics.pose().translate(renderPositionX, renderPositionY, 800.0F);
+            guiGraphics.pose().pushMatrix();
+            guiGraphics.pose().translate((float) renderPositionX, (float) renderPositionY);
             if (rotation != 0.0) {
-                guiGraphics.pose().rotateAround(Axis.ZP.rotationDegrees(rotation), toast.width() / 2f, 0f, 0f);
+                guiGraphics.pose().rotateAbout(rotation, toast.width() / 2f, 0f);
             }
             animationX = renderPositionX;
             animationY = renderPositionY;
             this.toast.render(guiGraphics, Minecraft.getInstance().font, this.fullyVisibleFor);
-            guiGraphics.pose().popPose();
+            guiGraphics.pose().popMatrix();
 
             ci.cancel();
         }

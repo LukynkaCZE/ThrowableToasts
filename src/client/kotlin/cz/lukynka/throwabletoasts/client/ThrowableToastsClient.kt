@@ -1,15 +1,23 @@
 package cz.lukynka.throwabletoasts.client
 
+import cz.lukynka.throwabletoasts.client.protocol.ModInstalledPacket
 import cz.lukynka.throwabletoasts.mixins.ToastManagerAccessor
 import net.fabricmc.api.ClientModInitializer
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
+import net.fabricmc.loader.api.FabricLoader
+import net.fabricmc.loader.api.ModContainer
 import net.minecraft.client.DeltaTracker
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.components.toasts.ToastManager.ToastInstance
 import org.joml.Vector2d
+import java.util.function.Consumer
 
 class ThrowableToastsClient : ClientModInitializer {
 
     companion object {
+
+        lateinit var VERSION: String
 
         private var frameRenderHandler: ((DeltaTracker) -> Unit)? = null
 
@@ -48,10 +56,18 @@ class ThrowableToastsClient : ClientModInitializer {
     }
 
     override fun onInitializeClient() {
-        frameRenderHandler = { delta -> onClientTick(Minecraft.getInstance(), delta) }
+        val container = FabricLoader.getInstance().getModContainer("throwabletoasts")
+        container.ifPresent(Consumer<ModContainer> { modContainer: ModContainer -> VERSION = modContainer.metadata.version.friendlyString })
+
+        frameRenderHandler = { _ -> onClientTick(Minecraft.getInstance()) }
+        PayloadTypeRegistry.playC2S().register(ModInstalledPacket.TYPE, ModInstalledPacket.STREAM_CODEC)
+
+        ClientPlayConnectionEvents.JOIN.register { _, sender, _ ->
+            sender.sendPacket(ModInstalledPacket(VERSION))
+        }
     }
 
-    fun onClientTick(client: Minecraft, deltaTracker: DeltaTracker) {
+    private fun onClientTick(client: Minecraft) {
 
         val mouseX: Double = client.mouseHandler.getScaledXPos(client.window)
         val mouseY: Double = client.mouseHandler.getScaledYPos(client.window)
