@@ -58,7 +58,7 @@ public class ToastInstanceMixin<T extends Toast> {
 
     double randomXModifier = ThrowableToastsClient.randomDoubleInRange(11, 17);
     double randomYModifier = ThrowableToastsClient.randomDoubleInRange(3, 5);
-    float randomRotModifier = (float) ThrowableToastsClient.randomDoubleInRange(0.1, 0.3);
+    float randomRotModifier = (float) ThrowableToastsClient.randomDoubleInRange(0.09, 0.19);
 
     private final int targetFPS = 30;
     private final float targetFrameDurationMillis = 1000f / targetFPS;
